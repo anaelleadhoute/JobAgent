@@ -1,4 +1,4 @@
-from log_analysis import log_analysis
+from tools.log_analysis import log_analysis
 
 result = log_analysis(
     company="Test Company",
