@@ -4,6 +4,12 @@ A personal tool that takes a job description (pasted text or a URL), extracts th
 
 This is a portfolio project built to demonstrate a specific engineering principle: most of the pipeline is deterministic code (SQL, parsing, structure), and AI is reserved only for the two steps that genuinely need it — extracting meaning from unstructured text, and judging fit. It directly addresses interview feedback (Wonderful.ai, June 2026) about over-using LLMs for steps that don't need them.
 
+
+curl -X POST https://jd-analyzer-396478058418.us-central1.run.app/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"jd_text": "We are looking for a Senior ML Engineer at Anthropic. Must have Python, PyTorch, 5+ years ML experience. Nice to have: Kubernetes, RLHF."}'
+
+  
 ## Stack
 
 - Python, FastAPI
