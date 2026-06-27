@@ -43,14 +43,13 @@ tools = [
         "type": "function",
         "function": {
             "name": "score_fit",
-            "description": "Scores fit between job requirements and candidate profile. Must be honest, no flattery.",
+            "description": "Scores fit between job requirements and candidate profile. Retrieves relevant profile entries automatically via RAG. Must be honest, no flattery.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "requirements": {"type": "object", "description": "Extracted job requirements"},
-                    "profile": {"type": "string", "description": "Candidate profile text"}
+                    "requirements": {"type": "object", "description": "Extracted job requirements"}
                 },
-                "required": ["requirements", "profile"]
+                "required": ["requirements"]
             }
         }
     },
@@ -88,13 +87,6 @@ tools = [
     }
 ]
 
-PROFILE = """
-- BSc Electrical Engineering, Tel Aviv University
-- MSc Computer Science (ML track), Reichman University (ongoing)
-- Mobileye (Jan 2023 - Sep 2025): Design Verification Engineer, Python tooling, large-scale simulation data analysis
-- Intel (May 2022 - Dec 2022): Logic Design Engineer, RTL/Verilog, Python automation
-- Skills: Python, SQL, pandas, NumPy, scikit-learn, OpenAI API, LangGraph, prompt engineering, Git
-"""
 
 def run_agent(user_input, source_url=None):
     messages = [
@@ -136,7 +128,6 @@ def run_agent(user_input, source_url=None):
                 elif name == "extract_requirements":
                     result = extract_requirements(**args)
                 elif name == "score_fit":
-                    args["profile"] = PROFILE
                     result = score_fit(**args)
                 elif name == "log_analysis":
                     if source_url:

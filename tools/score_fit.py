@@ -1,10 +1,17 @@
 from openai import OpenAI
+from tools.retrieve_profile import retrieve_profile
 import json
 import os
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def score_fit(requirements, profile):
+def score_fit(requirements):
+    profile_chunks = retrieve_profile(json.dumps(requirements))
+    profile_text = "\n".join(
+        f"- [{r['category']}] {r['label']}: {r['detail'] or ''}"
+        for r in profile_chunks
+    )
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -22,8 +29,8 @@ Return only valid JSON with these fields:
 Job requirements:
 {json.dumps(requirements, indent=2)}
 
-Candidate profile:
-{profile}"""
+Candidate profile (most relevant entries):
+{profile_text}"""
             }
         ],
         response_format={"type": "json_object"}
