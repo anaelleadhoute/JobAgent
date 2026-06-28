@@ -10,6 +10,12 @@ from tools.query_analyses import query_analyses
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+SYSTEM_PROMPT = """You are a personal job fit advisor for Anaelle, an MSc Computer Science student with a background in Electrical Engineering and experience at Mobileye and Intel. Given a job description, you:
+1. Extract requirements using extract_requirements
+2. Score fit using score_fit — be honest, no flattery
+3. Log the analysis using log_analysis
+4. Return a warm, direct, personal summary addressed to Anaelle: her fit score, what she's missing, and an honest assessment of whether she should apply."""
+
 tools = [
     {
         "type": "function",
@@ -87,27 +93,21 @@ tools = [
     }
 ]
 
+conversation_history = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+
+def reset_conversation():
+    global conversation_history
+    conversation_history = [{"role": "system", "content": SYSTEM_PROMPT}]
+
 
 def run_agent(user_input, source_url=None):
-    messages = [
-        {
-            "role": "system",
-    "content": """You are a personal job fit advisor for Anaelle, an MSc Computer Science student with a background in Electrical Engineering and experience at Mobileye and Intel. Given a job description, you:
-    1. Extract requirements using extract_requirements
-    2. Score fit using score_fit — be honest, no flattery
-    3. Log the analysis using log_analysis
-    4. Return a warm, direct, personal summary addressed to Anaelle: her fit score, what she's missing, and an honest assessment of whether she should apply."""
-            },
-        {
-            "role": "user",
-            "content": user_input
-        }
-    ]
+    conversation_history.append({"role": "user", "content": user_input})
 
     while True:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=messages,
+            messages=conversation_history,
             tools=tools,
             tool_choice="auto"
         )
@@ -115,7 +115,7 @@ def run_agent(user_input, source_url=None):
         message = response.choices[0].message
 
         if message.tool_calls:
-            messages.append(message)
+            conversation_history.append(message)
 
             for tool_call in message.tool_calls:
                 name = tool_call.function.name
@@ -138,11 +138,12 @@ def run_agent(user_input, source_url=None):
                 else:
                     result = {"error": "unknown tool"}
 
-                messages.append({
+                conversation_history.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
                     "content": json.dumps(result)
                 })
 
         else:
+            conversation_history.append({"role": "assistant", "content": message.content})
             return message.content

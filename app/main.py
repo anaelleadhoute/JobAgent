@@ -1,6 +1,9 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 from fastapi import FastAPI
 from pydantic import BaseModel
-from agent import run_agent
+from agent import run_agent, reset_conversation
 
 app = FastAPI()
 
@@ -18,3 +21,8 @@ def analyze(request: AnalyzeRequest):
         return {"error": "provide either jd_text or url"}
     
     return {"result": result}
+
+@app.post("/reset")
+def reset():
+    reset_conversation()
+    return {"status": "conversation reset"}
